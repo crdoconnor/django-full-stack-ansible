@@ -1,0 +1,72 @@
+---
+- name: uWsgi | (apt) Install required system packages.
+  sudo: yes
+  sudo_user: root
+  apt: >
+    pkg={{ item }}
+    state=installed
+    update-cache=yes
+  with_items:
+    - build-essential
+    - python-dev
+    - python-setuptools
+    - python-psycopg2
+    - python-virtualenv
+    - python-pip
+  tags:
+    - packages
+    - provision
+
+- name: uWsgi | (pip) Install required system packages.
+  sudo: yes
+  sudo_user: root
+  pip: name={{ item }}
+  with_items:
+    - virtualenv
+    - uwsgi
+  tags:
+    - packages
+    - provision
+
+- name: uWsgi | Ensure log directory exists.
+  file: >
+    dest={{ project.logs }}
+    state=directory
+    group={{ project.group }}
+    owner={{ project.user }}
+  tags:
+    - logs
+    - provision
+
+- name: uWsgi | Install uwsgi upstart job.
+  notify: restart uwsgi
+  template: >
+    src=upstart.uwsgi.conf.j2
+    dest=/etc/init/{{ project.name }}-uwsgi.conf
+    owner=root
+    group=root
+    mode=0644
+  tags:
+    - config
+    - uwsgi
+    - appserver
+    - update
+
+- name: uWsgi | Start daemon and enable it for system startup
+  service: >
+    name={{ project.name }}-uwsgi
+    state=started
+    enabled=yes
+  tags:
+    - uwsgi
+
+- name: uWsgi | Allow traffic from load balancer through firewall
+  ufw: >
+    rule=allow
+    proto=any
+    port={{ django.port }}
+    from_ip={{ item }}
+  with_items: groups.get('loadbalancers')
+  tags:
+    - firewall
+    - uwsgi

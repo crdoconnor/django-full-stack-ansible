@@ -1,0 +1,6 @@
+Host *
+  IdentityFile ~/insecure_private_key
+  User vagrant
+  Port 22
+
+UserKnownHostsFile known_hosts

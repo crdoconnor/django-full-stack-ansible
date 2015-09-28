@@ -1,0 +1,23 @@
+---
+- name: restart uwsgi
+  sudo_user: root
+  ignore_errors: True
+  service: >
+    name={{ project.name }}-uwsgi
+    state=restarted
+
+- name: reload uwsgi
+  sudo_user: root
+  ignore_errors: True
+  service: >
+    name={{ project.name }}-uwsgi
+    state=restarted
+
+- name: restart celery workers
+  when: message_queue is defined
+  service: name={{project.name}}-celeryworker state={{item}}
+  ignore_errors: True
+  with_items:
+    - stopped
+    - started
+  sudo_user: root

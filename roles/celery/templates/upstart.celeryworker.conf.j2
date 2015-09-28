@@ -1,0 +1,13 @@
+# Celery worker
+
+description "{{ project.name }}-celeryworker instance"
+start on runlevel [2345]
+stop on runlevel [06]
+
+respawn
+respawn limit 3 60
+
+exec sudo -u {{ project.user }} {{ project.virtualenv }}bin/python {{ django.root }}manage.py celery worker \
+  --loglevel=INFO \
+  --settings={{ django.settings }} {% if 'extra_worker_options' in message_queue %}{{ message_queue.extra_worker_options }}{% endif %} \
+  >> {{ project.logs }}celeryworker.{{ ansible_fqdn }}.log 2>&1 

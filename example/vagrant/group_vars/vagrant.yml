@@ -1,0 +1,41 @@
+---
+rsync:
+    args: "-e 'ssh -F {{ project.src }}/production/vagrant/ssh_config'"
+
+nginx:
+  servernames:
+    - "example"
+    - "*.example"
+  ssl:
+    private: "{{ project.src }}/production/vagrant/ssl/private.pem"
+    public: "{{ project.src }}/production/vagrant/ssl/public.crt"
+
+django:
+  settings: example.ansible_settings
+  debug: True
+  port: 8080
+  uwsgi_processes: 6
+  root: /opt/example/
+  main: /opt/example/example/
+  sitename: Example Website
+  sitedomain: example
+  secretkey: yj4gfh7fdtyunbf$dswryip94shb=-^@gfehks48954246545
+  redissessions: True
+  settingslines:
+    - "EMAIL_HOST = '10.0.2.2'"
+    - "EMAIL_PORT = 10025"
+    - "EMAIL_HOST_USER = ''"
+    - "EMAIL_HOST_PASSWORD = ''"
+    - "EMAIL_USE_TLS = False"
+    - "ROOT_DOMAIN = 'example'"
+    - "MEDIA_URL = '/media/'"
+    - "STATIC_URL = '/static/'"
+    - "from live_settings import *"
+
+database:
+  engine: django.db.backends.postgresql_psycopg2
+  user: example
+  password: fi28fhadwe
+  name: example
+  host: localhost
+  port: 5432

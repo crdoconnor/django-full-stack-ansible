@@ -1,0 +1,52 @@
+---
+- name: Database servers
+  hosts: dbservers
+  sudo: yes
+  roles:
+    - { role: server }
+    - { role: postgres }
+
+- name: Gather data about database servers
+  hosts: dbservers
+  gather_facts: yes
+  tasks:
+    - debug: Gather Facts
+
+- name: Queue servers
+  hosts: queueservers
+  sudo: yes
+  roles:
+    - { role: server }
+    - { role: redis }
+    - { role: django }
+    - { role: celery }
+    - { role: nginx }
+
+- name: Cache servers
+  hosts: cacheservers
+  sudo: yes
+
+  roles:
+    - { role: server }
+    - { role: redis }
+
+- name: Set up application servers
+  hosts: appservers
+  sudo: yes
+  roles:
+    - { role: server }
+    - { role: django }
+    - { role: uwsgi }
+
+- name: Gather data about application servers
+  hosts:  appservers
+  gather_facts: yes
+  tasks:
+    - debug: Gather Facts
+
+- name: Configure NGINX proxy
+  hosts: loadbalancers
+  sudo: yes
+  roles:
+    - { role: server }
+    - { role: nginx }

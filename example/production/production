@@ -1,0 +1,26 @@
+; VAGRANT SINGLE SERVER SETUP
+
+[loadbalancers]
+192.168.25.25
+
+[appservers]
+192.168.25.25
+
+[webservers]
+192.168.25.25 migrations=true
+;192.168.25.25
+;192.168.25.25
+
+[dbservers]
+192.168.25.25
+
+[cacheservers]
+192.168.25.25
+
+[vagrant:children]
+dbservers
+cacheservers
+webservers
+loadbalancers
+
+

@@ -1,0 +1,16 @@
+---
+- name: restart uwsgi
+  service: name={{project.name}}-uwsgi state={{item}}
+  sudo_user: root
+  ignore_errors: True
+  with_items:
+    - stopped
+    - started
+
+- name: reload uwsgi
+  service: name={{project.name}}-uwsgi state={{item}}
+  sudo_user: root
+  ignore_errors: True
+  with_items:
+    - stopped
+    - started

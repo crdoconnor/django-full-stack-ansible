@@ -1,0 +1,26 @@
+---
+- name: Commmon | Install required system packages.
+  apt: >
+    pkg={{ item }}
+    state=installed
+    update-cache=yes
+  with_items:
+    - redis-server
+
+- name: Listen on public interface
+  lineinfile: >
+    dest=/etc/redis/redis.conf
+    regexp="^bind"
+    line="#bind"
+  notify: restart redis
+
+- name: Django | Allow traffic from appservers through firewall
+  ufw: >
+    rule=allow
+    proto=any
+    port=6379
+    from_ip={{ item }}
+  with_items: groups.get('appservers')
+  tags:
+    - firewall
+    - redis

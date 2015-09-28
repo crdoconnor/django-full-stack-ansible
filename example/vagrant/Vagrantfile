@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+Vagrant.configure("2") do |config|
+  config.vm.box = "trusty64"
+  config.vm.box_url = 'http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box'
+
+  # This makes this machine accessible from the VMs with IP 192.168.50.1
+  # This is so a debug SMTP server on the host can serve as the SMTP server for the VM.
+  config.vm.network :private_network, ip: "192.168.25.25"
+
+  config.vm.provider :virtualbox do |virtualbox|
+    virtualbox.customize ["modifyvm", :id, "--memory", 512]
+  end
+
+  config.vm.define :djangoserver do |node|
+    node.vm.box = "trusty64"
+    node.vm.hostname = "djangoserver"
+    node.vm.network :private_network, ip: "192.168.52.52"
+  end
+end
