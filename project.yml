@@ -1,0 +1,28 @@
+---
+project:
+  fqdn: example
+  name: example
+  user: example
+  group: www-data
+  root: /opt/example/
+  virtualenv: /opt/venv/
+  virtualenv_site_packages: yes
+  logs: /opt/logs/
+  appdir: /opt/example/settingsdir/
+  requirements: /opt/example/requirements.txt
+  packages:
+    - libxml2-dev
+    - libxslt1-dev
+    - python-lxml
+    - libjpeg-dev
+    - libfreetype6
+    - libfreetype6-dev
+    - libmysqlclient-dev
+    - zlib1g-dev
+    - node-less
+    - yui-compressor
+    - git
+
+user:
+    ssh_files: "{{ files }}/ssh"
+
