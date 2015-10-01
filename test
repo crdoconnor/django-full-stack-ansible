@@ -1,0 +1,8 @@
+#!/bin/bash
+DEPLOYDIR=$(cd `dirname $0` && pwd)
+PLAYBOOKDIR=$DEPLOYDIR/playbook
+PROJECTDIR=$DEPLOYDIR/../
+cd $DEPLOYDIR/vagrant
+vagrant up
+vagrant ssh-config --host 192.168.25.25 > ssh_config
+echo ansible-playbook -i vagrant -u vagrant $PLAYBOOKDIR/site.yml -e $DEPLOYDIR/project.yml -e projectsrc=$PROJECTDIR
