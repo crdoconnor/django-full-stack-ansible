@@ -56,22 +56,21 @@
   sudo: yes
   sudo_user: "{{ project.user }}"
   synchronize: >
-    src={{ project.src }}
+    src={{ projectsrc }}
+    dest={{ project.root }}
     rsync_opts="{{ rsync.args }}"
     rsync_timeout=360
     mode=push
-    owner=no
-    perms=no
     checksum=yes
     delete=yes
     group=no
     times=no
     set_remote_user=no
-    dest={{ project.root }}
   tags:
     - pip
     - app
     - code
+    - debug
   notify:
     - restart celery workers
     - restart uwsgi
@@ -95,7 +94,7 @@
     name={{ item }}
     virtualenv_site_packages={{ project.virtualenv_site_packages }}
     virtualenv={{ project.virtualenv }}
-    extra_args='--no-index --find-links {{ project.packagedir }}'
+    extra_args=''
     state=latest
     use_mirrors=no
   with_items:
@@ -106,6 +105,7 @@
     - application
     - pip
     - app
+  retries: 2
 
 - name: Django | Pip | Install Requirements.
   sudo_user: "{{ project.user }}"
@@ -113,7 +113,7 @@
     requirements={{ item }}
     virtualenv_site_packages={{ project.virtualenv_site_packages }}
     virtualenv={{ project.virtualenv }}
-    extra_args='--no-index --find-links {{ project.packagedir }}'
+    extra_args=''
   with_items: project.requirements
   tags:
     - packages
@@ -121,6 +121,7 @@
     - application
     - pip
     - app
+  retries: 3
 
 - name: Django | Settings | Create Django Database Settings Module
   sudo_user: "{{ project.user }}"
@@ -139,69 +140,81 @@
     - update
     - app
 
-- name: Django | Create Database Tables
-  when: syncdb is defined
+- name: Django | Run initialization commands
   sudo_user: "{{ project.user }}"
   django_manage: >
-    command=syncdb
+    command={{ item }}
     app_path={{ django.root }}
     settings={{ django.settings }}
     virtualenv={{ project.virtualenv }}
+  with_items: django.initialization
   tags:
     - database
     - app
 
-- name: Django | Migrate Django database.
-  when: migrations is defined
-  sudo_user: "{{ project.user }}"
-  django_manage: >
-    command=migrate
-    app_path={{ django.root }}
-    settings={{ django.settings }}
-    virtualenv={{ project.virtualenv }}
-  tags:
-    - database
-    - update
-    - app
+#- name: Django | Create Database Tables
+  #when: syncdb is defined
+  #sudo_user: "{{ project.user }}"
+  #django_manage: >
+    #command=syncdb
+    #app_path={{ django.root }}
+    #settings={{ django.settings }}
+    #virtualenv={{ project.virtualenv }}
+  #tags:
+    #- database
+    #- app
 
-- name: Django | Install Fixtures.
-  when: fixtures is defined
-  sudo_user: "{{ project.user }}"
-  django_manage: >
-    command=loaddata
-    fixtures={{ item }}
-    app_path={{ django.root }}
-    settings={{ django.settings }}
-    virtualenv={{ project.virtualenv }}
-  with_items: django.fixtures
-  tags:
-    - database
-    - fixtures
-    - app
+#- name: Django | Migrate Django database.
+  #when: migrations is defined
+  #sudo_user: "{{ project.user }}"
+  #django_manage: >
+    #command=migrate
+    #app_path={{ django.root }}
+    #settings={{ django.settings }}
+    #virtualenv={{ project.virtualenv }}
+  #tags:
+    #- database
+    #- update
+    #- app
 
-- name: Django | Install sites fixture
-  sudo_user: "{{ project.user }}"
-  template: >
-    src=sites.json.j2
-    dest="{{ project.root }}/fixtures/sites.json"
-  tags:
-    - database
-    - fixtures
-    - app
+#- name: Django | Install Fixtures.
+  #when: fixtures is defined
+  #sudo_user: "{{ project.user }}"
+  #django_manage: >
+    #command=loaddata
+    #fixtures={{ item }}
+    #app_path={{ django.root }}
+    #settings={{ django.settings }}
+    #virtualenv={{ project.virtualenv }}
+  #with_items: django.fixtures
+  #tags:
+    #- database
+    #- fixtures
+    #- app
 
-- name: Django | Update sites table
-  when: fixtures is defined
-  sudo_user: "{{ project.user }}"
-  django_manage: >
-    command=loaddata
-    fixtures=sites.json
-    app_path={{ project.root }}
-    settings={{ django.settings }}
-    virtualenv={{ project.virtualenv }}
-  tags:
-    - database
-    - fixtures
-    - app
+#- name: Django | Install sites fixture
+  #sudo_user: "{{ project.user }}"
+  #template: >
+    #src=sites.json.j2
+    #dest="{{ project.root }}/fixtures/sites.json"
+  #tags:
+    #- database
+    #- fixtures
+    #- app
+
+#- name: Django | Update sites table
+  #when: fixtures is defined
+  #sudo_user: "{{ project.user }}"
+  #django_manage: >
+    #command=loaddata
+    #fixtures=sites.json
+    #app_path={{ project.root }}
+    #settings={{ django.settings }}
+    #virtualenv={{ project.virtualenv }}
+  #tags:
+    #- database
+    #- fixtures
+    #- app
 
 - name: Django | Assets | Collect
   sudo_user: "{{ project.user }}"
